@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Avatar from "@mui/material/Avatar";
@@ -10,7 +11,7 @@ import VpnLockIcon from "@mui/icons-material/VpnLock";
 import BoltIcon from "@mui/icons-material/Bolt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-
+import { capitalizeFirstLetter } from "~/utils/formaters";
 const MENU_STYLE = {
   color: "white",
   bgcolor: "transparent",
@@ -24,7 +25,7 @@ const MENU_STYLE = {
     bgcolor: "primary.50",
   },
 };
-function BoardBar() {
+function BoardBar({ board }) {
   return (
     <Box
       sx={{
@@ -45,13 +46,13 @@ function BoardBar() {
           sx={MENU_STYLE}
           onClick={() => {}}
           icon={<DashboardIcon />}
-          label="Board Name"
+          label={board?.title}
         />
         <Chip
           sx={MENU_STYLE}
           onClick={() => {}}
           icon={<VpnLockIcon />}
-          label="Public/Private Workspace"
+          label={capitalizeFirstLetter(board?.type)}
         />
 
         <Chip
