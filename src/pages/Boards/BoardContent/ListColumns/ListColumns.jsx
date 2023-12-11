@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import CloseIcon from "@mui/icons-material/Close";
-
+import { toast } from "react-toastify";
 import Column from "./Column/Column";
 import {
   SortableContext,
@@ -11,7 +11,12 @@ import {
 } from "@dnd-kit/sortable";
 import AddIcon from "@mui/icons-material/Add";
 import { useState } from "react";
-function ListColumns({ columns }) {
+function ListColumns({
+  columns,
+  createNewCol,
+  createNewCard,
+  deleteColumnDetails,
+}) {
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false);
 
   const toggleOpenNewColumnForm = () =>
@@ -20,11 +25,16 @@ function ListColumns({ columns }) {
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const addNewColumn = () => {
     if (!newColumnTitle) {
-      console.error("Please enter Column title");
+      toast.error("Please enter Column title");
+      return;
     }
-    console.log(newColumnTitle);
     //goi api o day
-
+    //Tao du lieu Column de goi API
+    const newCol = {
+      title: newColumnTitle,
+    };
+    /* goi createNewCol o /board/_id.jsx (sau nay se xa redux)*/
+    createNewCol(newCol);
     //dong trang thai va clear input
     toggleOpenNewColumnForm();
     setNewColumnTitle("");
@@ -46,7 +56,12 @@ function ListColumns({ columns }) {
         }}
       >
         {columns?.map((column) => (
-          <Column key={column._id} column={column} />
+          <Column
+            key={column._id}
+            column={column}
+            createNewCard={createNewCard}
+            deleteColumnDetails={deleteColumnDetails}
+          />
         ))}
 
         {/* <Column /> */}

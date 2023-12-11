@@ -7,6 +7,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
+import { useConfirm } from "material-ui-confirm";
 
 import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -20,14 +21,14 @@ import Cloud from "@mui/icons-material/Cloud";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import ListCards from "./ListCards/ListCards";
-import { mapOrder } from "~/utils/sorts";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import TextField from "@mui/material/TextField";
+import { toast } from "react-toastify";
 
 import CloseIcon from "@mui/icons-material/Close";
 
-function Column({ column }) {
+function Column({ column, createNewCard, deleteColumnDetails }) {
   const {
     attributes,
     listeners,
@@ -45,7 +46,7 @@ function Column({ column }) {
     opacity: isDragging ? 0.5 : undefined,
   };
 
-  const orderedCards = mapOrder(column?.cards, column?.cardOrderIds, "_id");
+  const orderedCards = column.cards;
 
   const [openNewCardForm, setOpenNewCardForm] = useState(false);
 
@@ -54,10 +55,16 @@ function Column({ column }) {
   const [newCardTitle, setNewCardTitle] = useState("");
   const addNewCard = () => {
     if (!newCardTitle) {
-      console.error("Please enter Card title");
+      toast.error("Please enter Card title", { position: "bottom-right" });
+      return;
     }
-    console.log(newCardTitle);
+
     //goi api o day
+    //tao du lieu de goi api
+    const newCard = { title: newCardTitle, columnId: column._id };
+    /* goi createNewCard o /board/_id.jsx (sau nay se xa redux)*/
+
+    createNewCard(newCard);
 
     //dong trang thai va clear input
     toggleOpenNewCardForm();
@@ -72,6 +79,28 @@ function Column({ column }) {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  //Todo: Xử lý xóa một cột và cards bên trong nó
+  const confirmDeleteCol = useConfirm();
+  const handleDeleteCol = () => {
+    confirmDeleteCol({
+      title: "Delete Column",
+      description: "Are you sure to DELETE this Column!",
+      confirmationText: "Delete",
+      //! Có thể ghi đè được, mặc định sẽ được cài ở main.jsx
+      // allowClose: false,
+      // dialogProps: { maxWidth: "xs" },
+      // buttonOrder: ["confirm", "cancel"],
+      // cancellationButtonProps: { color: "inherit" },
+      // confirmationButtonProps: { color: "error", variant: "outlined" },
+    })
+      .then(() => {
+        deleteColumnDetails(column._id);
+        console.log("Xóa col: ", column.title);
+      })
+      .catch(() => {});
+  };
+
   return (
     <div ref={setNodeRef} style={dndKitColStyle} {...attributes}>
       <Box
@@ -120,13 +149,22 @@ function Column({ column }) {
               anchorEl={anchorEl}
               open={open}
               onClose={handleClose}
+              onClick={handleClose}
               MenuListProps={{
                 "aria-labelledby": "basic-column-dropdown",
               }}
             >
-              <MenuItem>
+              <MenuItem
+                onClick={toggleOpenNewCardForm}
+                sx={{
+                  "&:hover": {
+                    color: "success.light",
+                    "& .addCardIcon": { color: "success.light" },
+                  },
+                }}
+              >
                 <ListItemIcon>
-                  <AddCardIcon fontSize="small" />
+                  <AddCardIcon className="addCardIcon" fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Add new card</ListItemText>
               </MenuItem>
@@ -149,11 +187,22 @@ function Column({ column }) {
                 <ListItemText>Paste</ListItemText>
               </MenuItem>
               <Divider />
-              <MenuItem>
+              <MenuItem
+                onClick={handleDeleteCol}
+                sx={{
+                  "&:hover": {
+                    color: "warning.dark",
+                    "& .deleteForeverIcon": { color: "warning.dark" },
+                  },
+                }}
+              >
                 <ListItemIcon>
-                  <DeleteForeverIcon fontSize="small" />
+                  <DeleteForeverIcon
+                    className="deleteForeverIcon"
+                    fontSize="small"
+                  />
                 </ListItemIcon>
-                <ListItemText>Remove this column</ListItemText>
+                <ListItemText>Delete this column</ListItemText>
               </MenuItem>
               <MenuItem>
                 <ListItemIcon>
